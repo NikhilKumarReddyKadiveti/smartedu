@@ -1,188 +1,530 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SmartEdu Cloud - Demo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Attendance Portal - Live Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --bg-dark: #0f0c29;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --primary-color: #e50914;
+            --accent-color: #00d2ff;
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+            --font-main: 'Poppins', sans-serif;
+        }
 
-<!-- Tailwind CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
+        
+        body {
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+        /* Views Management */
+        .view-section { display: none; height: 100vh; width: 100%; }
+        .view-section.active { display: block; }
 
-<style>
-body {
-font-family: 'Inter', sans-serif;
-}
-</style>
+        /* Glassmorphism */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
+            padding: 2rem;
+            color: white;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: 0.3s;
+            margin-bottom: 1rem;
+        }
+        .glass-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); }
+
+        /* Controls */
+        input, select, button {
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: white; outline: none;
+        }
+        button { cursor: pointer; background: var(--primary-color); border: none; font-weight: bold; text-transform: uppercase; }
+        button:hover { background: #ff1f1f; }
+        button.secondary { background: #444; }
+
+        /* Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: 100vh;
+        }
+        .sidebar { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+        .nav-link { 
+            padding: 10px; cursor: pointer; border-radius: 5px; color: var(--text-muted); text-decoration: none; display: block; 
+        }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; border-left: 3px solid var(--accent-color); }
+        .content-area { overflow-y: auto; padding: 10px; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+
+        /* Animations */
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .fade-in { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        .hidden { display: none !important; }
+        .text-success { color: #00ff88; }
+        .text-danger { color: #ff4444; }
+    </style>
 </head>
+<body>
 
-<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
+    <section id="login-view" class="view-section active">
+        <div style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+            <div class="glass-panel fade-in" style="width: 400px; text-align: center;">
+                <h2 style="margin-bottom: 20px;">Smart Attendance</h2>
+                <div style="background: rgba(255,255,0,0.1); padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 0.8rem; text-align: left;">
+                    <strong>Demo Credentials:</strong><br>
+                    Admin: admin@test.com / 123<br>
+                    Faculty: faculty@test.com / 123<br>
+                    Student: student@test.com / 123
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="password" id="login-pass" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+    </section>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="bg-white p-8 rounded-xl shadow-xl w-[350px]">
+    <section id="admin-view" class="view-section">
+        <div class="dashboard-grid">
+            <aside class="glass-panel sidebar">
+                <h3 style="color: var(--accent-color);">Admin Portal</h3>
+                <a onclick="showAdminTab('overview')" class="nav-link active">Overview</a>
+                <a onclick="showAdminTab('add-user')" class="nav-link">Add User</a>
+                <a onclick="logout()" class="nav-link" style="color: var(--primary-color);">Logout</a>
+            </aside>
+            <main class="content-area glass-panel fade-in">
+                <div id="admin-overview">
+                    <h2>System Overview</h2>
+                    <div class="stats-grid" style="margin-top: 20px;">
+                        <div class="glass-card">
+                            <h3>Total Students</h3>
+                            <h1 class="text-accent" id="stat-students">0</h1>
+                        </div>
+                        <div class="glass-card">
+                            <h3>Total Faculty</h3>
+                            <h1 class="text-success" id="stat-faculty">0</h1>
+                        </div>
+                    </div>
+                </div>
+                <div id="admin-add-user" class="hidden">
+                    <h2>Add New User</h2>
+                    <form onsubmit="adminAddUser(event)" style="max-width: 500px; margin-top: 20px;">
+                        <input type="text" id="new-name" placeholder="Full Name" required>
+                        <input type="email" id="new-email" placeholder="Email Address" required>
+                        <input type="password" id="new-pass" placeholder="Password" required>
+                        <select id="new-role" onchange="toggleRollField()">
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                        </select>
+                        <input type="text" id="new-roll" placeholder="Roll Number (Students Only)">
+                        <button type="submit">Create Account</button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </section>
 
-<h2 class="text-2xl font-bold text-center mb-6 text-blue-600">SmartEdu Cloud</h2>
+    <section id="faculty-view" class="view-section">
+        <div class="dashboard-grid">
+            <aside class="glass-panel sidebar">
+                <h3 style="color: var(--accent-color);">Faculty Portal</h3>
+                <a onclick="showFacultyTab('dashboard')" class="nav-link active">My Courses</a>
+                <a onclick="showFacultyTab('add-course')" class="nav-link">Add Course</a>
+                <a onclick="showFacultyTab('attendance')" class="nav-link">Mark Attendance</a>
+                <a onclick="logout()" class="nav-link" style="color: var(--primary-color);">Logout</a>
+            </aside>
+            <main class="content-area glass-panel fade-in">
+                <div id="fac-dashboard">
+                    <h2>My Courses</h2>
+                    <div id="fac-course-list" class="stats-grid" style="margin-top: 20px;"></div>
+                </div>
+                <div id="fac-add-course" class="hidden">
+                    <h2>Create Course</h2>
+                    <form onsubmit="facultyAddCourse(event)" style="max-width: 500px; margin-top: 20px;">
+                        <input type="text" id="course-name" placeholder="Course Name" required>
+                        <input type="text" id="course-code" placeholder="Course Code" required>
+                        <button type="submit">Create Course</button>
+                    </form>
+                </div>
+                <div id="fac-attendance" class="hidden">
+                    <h2>Mark Attendance</h2>
+                    <select id="att-course-select" onchange="loadStudentsForAttendance()">
+                        <option value="">Select Course</option>
+                    </select>
+                    <div id="attendance-area" class="hidden">
+                        <input type="date" id="att-date" required>
+                        <div id="student-checklist"></div>
+                        <button onclick="saveAttendance()" style="margin-top: 20px;">Save Attendance</button>
+                        <button onclick="closeCourse()" class="secondary" style="margin-top: 10px;">Close Course (Generate Hall Tickets)</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
 
-<input id="email" type="email" placeholder="Email"
-class="w-full border p-2 rounded mb-3">
+    <section id="student-view" class="view-section">
+        <div class="dashboard-grid">
+            <aside class="glass-panel sidebar">
+                <h3 style="color: var(--accent-color);">Student Portal</h3>
+                <div style="margin-bottom: 20px; font-size: 0.9rem;">
+                    Welcome, <br><strong id="student-name-display">Student</strong>
+                </div>
+                <a onclick="showStudentTab('dashboard')" class="nav-link active">Attendance</a>
+                <a onclick="showStudentTab('hallticket')" class="nav-link">Hall Ticket</a>
+                <a onclick="logout()" class="nav-link" style="color: var(--primary-color);">Logout</a>
+            </aside>
+            <main class="content-area glass-panel fade-in">
+                <div id="std-dashboard">
+                    <h2>Attendance Summary</h2>
+                    <div id="std-stats-grid" class="stats-grid" style="margin-top: 20px;"></div>
+                </div>
+                <div id="std-hallticket" class="hidden">
+                    <h2>My Hall Tickets</h2>
+                    <div id="ticket-container" style="margin-top: 20px;"></div>
+                </div>
+            </main>
+        </div>
+    </section>
 
-<input id="password" type="password" placeholder="Password"
-class="w-full border p-2 rounded mb-3">
+    <script>
+        // --- 1. MOCK DATABASE (LocalStorage Wrapper) ---
+        const DB = {
+            init: () => {
+                if (!localStorage.getItem('users')) {
+                    const users = [
+                        { id: 1, name: "Admin User", email: "admin@test.com", password: "123", role: "admin" },
+                        { id: 2, name: "Dr. Smith", email: "faculty@test.com", password: "123", role: "faculty" },
+                        { id: 3, name: "John Doe", email: "student@test.com", password: "123", role: "student", roll: "101" },
+                        { id: 4, name: "Jane Doe", email: "student2@test.com", password: "123", role: "student", roll: "102" }
+                    ];
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // Initial Course for demo
+                    const courses = [
+                        { id: 1, name: "Web Development", code: "CS101", facultyId: 2, students: [3, 4], closed: false }
+                    ];
+                    localStorage.setItem('courses', JSON.stringify(courses));
+                    localStorage.setItem('attendance', JSON.stringify([]));
+                }
+            },
+            get: (key) => JSON.parse(localStorage.getItem(key) || '[]'),
+            set: (key, data) => localStorage.setItem(key, JSON.stringify(data)),
+            users: () => DB.get('users'),
+            courses: () => DB.get('courses'),
+            attendance: () => DB.get('attendance')
+        };
 
-<button onclick="login()"
-class="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700">
-Login
-</button>
+        // Initialize DB on load
+        DB.init();
+        let currentUser = null;
 
-<p id="loginError" class="text-red-500 text-sm mt-2 text-center"></p>
+        // --- 2. AUTHENTICATION ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            
+            const user = DB.users().find(u => u.email === email && u.password === pass);
+            
+            if (user) {
+                currentUser = user;
+                switchView(user.role + '-view');
+                if(user.role === 'admin') loadAdminStats();
+                if(user.role === 'faculty') loadFacultyData();
+                if(user.role === 'student') loadStudentData();
+            } else {
+                alert('Invalid Credentials');
+            }
+        }
 
-<p class="text-center text-sm mt-4 text-gray-500">
-Demo Login:<br>
-student@smartedu.com | 123456
-</p>
+        function logout() {
+            currentUser = null;
+            switchView('login-view');
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-pass').value = '';
+        }
 
-</div>
+        // --- 3. NAVIGATION HELPERS ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="hidden w-full h-screen">
+        function toggleDisplay(parentId, showId) {
+            const parent = document.getElementById(parentId);
+            Array.from(parent.children).forEach(child => {
+                if(child.tagName === 'DIV') child.classList.add('hidden');
+            });
+            document.getElementById(showId).classList.remove('hidden');
+        }
 
-<!-- NAVBAR -->
-<div class="bg-white shadow p-4 flex justify-between items-center">
+        // --- 4. ADMIN LOGIC ---
+        function showAdminTab(tab) {
+            toggleDisplay('admin-view', 'admin-' + tab); // Fix: Logic tailored for simple ID hiding
+            document.getElementById('admin-overview').classList.add('hidden');
+            document.getElementById('admin-add-user').classList.add('hidden');
+            document.getElementById('admin-' + tab).classList.remove('hidden');
+        }
 
-<h2 class="font-bold text-xl text-blue-600">SmartEdu Cloud Dashboard</h2>
+        function loadAdminStats() {
+            const users = DB.users();
+            document.getElementById('stat-students').innerText = users.filter(u => u.role === 'student').length;
+            document.getElementById('stat-faculty').innerText = users.filter(u => u.role === 'faculty').length;
+        }
 
-<button onclick="logout()"
-class="bg-red-500 text-white px-4 py-1 rounded">
-Logout
-</button>
+        function toggleRollField() {
+            const role = document.getElementById('new-role').value;
+            document.getElementById('new-roll').style.display = role === 'student' ? 'block' : 'none';
+        }
 
-</div>
+        function adminAddUser(e) {
+            e.preventDefault();
+            const users = DB.users();
+            const role = document.getElementById('new-role').value;
+            const newUser = {
+                id: Date.now(),
+                name: document.getElementById('new-name').value,
+                email: document.getElementById('new-email').value,
+                password: document.getElementById('new-pass').value,
+                role: role,
+                roll: role === 'student' ? document.getElementById('new-roll').value : null
+            };
+            users.push(newUser);
+            DB.set('users', users);
+            alert('User Added Successfully!');
+            document.getElementById('new-name').value = ''; // Clear form
+            loadAdminStats();
+        }
 
-<!-- MAIN CONTENT -->
-<div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        // --- 5. FACULTY LOGIC ---
+        function showFacultyTab(tab) {
+            document.getElementById('fac-dashboard').classList.add('hidden');
+            document.getElementById('fac-add-course').classList.add('hidden');
+            document.getElementById('fac-attendance').classList.add('hidden');
+            document.getElementById('fac-' + tab).classList.remove('hidden');
+            if(tab === 'dashboard') loadFacultyData();
+        }
 
-<!-- PROFILE CARD -->
-<div class="bg-white p-4 rounded shadow">
+        function loadFacultyData() {
+            const courses = DB.courses().filter(c => c.facultyId === currentUser.id);
+            const container = document.getElementById('fac-course-list');
+            container.innerHTML = '';
+            courses.forEach(c => {
+                container.innerHTML += `
+                    <div class="glass-card">
+                        <h3>${c.name}</h3>
+                        <p class="text-muted">${c.code}</p>
+                        <p>${c.students.length} Students Enrolled</p>
+                        <p style="font-size:0.8rem; margin-top:5px; color:${c.closed ? 'red' : '#00ff88'}">${c.closed ? 'Closed' : 'Active'}</p>
+                    </div>
+                `;
+            });
 
-<h3 class="font-semibold mb-2">Student Profile</h3>
+            // Populate select for attendance
+            const sel = document.getElementById('att-course-select');
+            sel.innerHTML = '<option value="">Select Course</option>';
+            courses.forEach(c => {
+                if(!c.closed) sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            });
+        }
 
-<p><b>Name:</b> John Student</p>
-<p><b>Email:</b> student@smartedu.com</p>
-<p><b>Course:</b> Computer Science</p>
+        function facultyAddCourse(e) {
+            e.preventDefault();
+            const courses = DB.courses();
+            // Automatically assign all existing students to new course for demo simplicity
+            const allStudentIds = DB.users().filter(u => u.role === 'student').map(u => u.id);
+            
+            courses.push({
+                id: Date.now(),
+                name: document.getElementById('course-name').value,
+                code: document.getElementById('course-code').value,
+                facultyId: currentUser.id,
+                students: allStudentIds,
+                closed: false
+            });
+            DB.set('courses', courses);
+            alert('Course Created!');
+            showFacultyTab('dashboard');
+        }
 
-</div>
+        function loadStudentsForAttendance() {
+            const courseId = parseInt(document.getElementById('att-course-select').value);
+            if (!courseId) {
+                document.getElementById('attendance-area').classList.add('hidden');
+                return;
+            }
+            document.getElementById('attendance-area').classList.remove('hidden');
+            
+            const course = DB.courses().find(c => c.id === courseId);
+            const users = DB.users();
+            const container = document.getElementById('student-checklist');
+            
+            container.innerHTML = '';
+            course.students.forEach(sId => {
+                const student = users.find(u => u.id === sId);
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">
+                        <span>${student.name} (${student.roll})</span>
+                        <input type="checkbox" class="att-checkbox" data-id="${sId}" checked>
+                    </div>
+                `;
+            });
+        }
 
-<!-- COURSES CARD -->
-<div class="bg-white p-4 rounded shadow">
+        function saveAttendance() {
+            const courseId = parseInt(document.getElementById('att-course-select').value);
+            const date = document.getElementById('att-date').value;
+            if(!date) return alert('Please select a date');
 
-<h3 class="font-semibold mb-2">Enrolled Courses</h3>
+            const attendanceDB = DB.attendance();
+            const checkboxes = document.querySelectorAll('.att-checkbox');
+            
+            const record = {
+                courseId,
+                date,
+                records: []
+            };
 
-<ul class="list-disc ml-5">
-<li>Cloud Computing</li>
-<li>Android Development</li>
-<li>Data Structures</li>
-<li>AI Fundamentals</li>
-</ul>
+            checkboxes.forEach(cb => {
+                record.records.push({ studentId: parseInt(cb.dataset.id), status: cb.checked ? 'Present' : 'Absent' });
+            });
 
-<button onclick="showCourses()"
-class="mt-3 bg-blue-600 text-white px-3 py-1 rounded">
-View Details
-</button>
+            attendanceDB.push(record);
+            DB.set('attendance', attendanceDB);
+            alert('Attendance Saved!');
+        }
 
-</div>
+        function closeCourse() {
+            if(!confirm('Close course and generate hall tickets?')) return;
+            const courseId = parseInt(document.getElementById('att-course-select').value);
+            
+            const courses = DB.courses();
+            const courseIndex = courses.findIndex(c => c.id === courseId);
+            courses[courseIndex].closed = true;
+            DB.set('courses', courses);
+            
+            alert('Course Closed. Hall tickets generated for students.');
+            loadFacultyData(); // Refresh UI
+            document.getElementById('attendance-area').classList.add('hidden');
+        }
 
-<!-- PERFORMANCE CARD -->
-<div class="bg-white p-4 rounded shadow">
+        // --- 6. STUDENT LOGIC ---
+        function showStudentTab(tab) {
+            document.getElementById('std-dashboard').classList.add('hidden');
+            document.getElementById('std-hallticket').classList.add('hidden');
+            document.getElementById('std-' + tab).classList.remove('hidden');
+            if(tab === 'dashboard') loadStudentData();
+            if(tab === 'hallticket') loadHallTickets();
+        }
 
-<h3 class="font-semibold mb-2">Academic Performance</h3>
+        function loadStudentData() {
+            document.getElementById('student-name-display').innerText = currentUser.name;
+            const myCourses = DB.courses().filter(c => c.students.includes(currentUser.id));
+            const attDB = DB.attendance();
+            const container = document.getElementById('std-stats-grid');
+            
+            container.innerHTML = '';
+            
+            myCourses.forEach(c => {
+                // Calculate Stats
+                const courseAtt = attDB.filter(a => a.courseId === c.id);
+                let total = 0; 
+                let present = 0;
+                
+                courseAtt.forEach(session => {
+                    const myRecord = session.records.find(r => r.studentId === currentUser.id);
+                    if(myRecord) {
+                        total++;
+                        if(myRecord.status === 'Present') present++;
+                    }
+                });
+                
+                const pct = total === 0 ? 0 : (present / total) * 100;
+                const color = pct < 75 ? 'text-danger' : 'text-success';
+                
+                container.innerHTML += `
+                    <div class="glass-card">
+                        <h3>${c.name}</h3>
+                        <p>${c.code}</p>
+                        <h1 class="${color}">${pct.toFixed(1)}%</h1>
+                        <p>${present}/${total} Classes Attended</p>
+                    </div>
+                `;
+            });
+        }
 
-<p>Attendance: 92%</p>
-<p>GPA: 8.6</p>
+        function loadHallTickets() {
+            const myCourses = DB.courses().filter(c => c.students.includes(currentUser.id) && c.closed);
+            const attDB = DB.attendance();
+            const container = document.getElementById('ticket-container');
+            
+            if(myCourses.length === 0) {
+                container.innerHTML = '<p>No hall tickets available (Courses not closed yet).</p>';
+                return;
+            }
 
-<button onclick="showPerformance()"
-class="mt-3 bg-green-600 text-white px-3 py-1 rounded">
-Analyze
-</button>
+            container.innerHTML = '';
+            myCourses.forEach(c => {
+                 // Recalculate Stats
+                 const courseAtt = attDB.filter(a => a.courseId === c.id);
+                let total = 0; 
+                let present = 0;
+                courseAtt.forEach(session => {
+                    const myRecord = session.records.find(r => r.studentId === currentUser.id);
+                    if(myRecord) { total++; if(myRecord.status === 'Present') present++; }
+                });
+                const pct = total === 0 ? 0 : (present / total) * 100;
+                const eligible = pct >= 75;
 
-</div>
-
-</div>
-
-<!-- ACTION AREA -->
-<div id="actionBox" class="p-6"></div>
-
-</div>
-
-<script>
-
-// Sample Login Data
-const demoUser = {
-email: "student@smartedu.com",
-password: "123456"
-};
-
-// Login Function
-function login() {
-
-const email = document.getElementById("email").value;
-const password = document.getElementById("password").value;
-
-if(email === demoUser.email && password === demoUser.password){
-
-document.getElementById("loginPage").style.display = "none";
-document.getElementById("dashboard").style.display = "block";
-
-} else {
-
-document.getElementById("loginError").innerText = "Invalid Login Credentials";
-
-}
-
-}
-
-// Logout Function
-function logout(){
-
-document.getElementById("dashboard").style.display = "none";
-document.getElementById("loginPage").style.display = "block";
-
-document.getElementById("email").value = "";
-document.getElementById("password").value = "";
-
-}
-
-// Courses Button
-function showCourses(){
-
-document.getElementById("actionBox").innerHTML = `
-<div class="bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-2">Course Details</h3>
-<p>✔ Cloud Computing - Progress: 80%</p>
-<p>✔ Android Development - Progress: 70%</p>
-<p>✔ Data Structures - Progress: 90%</p>
-<p>✔ AI Fundamentals - Progress: 60%</p>
-</div>
-`;
-
-}
-
-// Performance Button
-function showPerformance(){
-
-document.getElementById("actionBox").innerHTML = `
-<div class="bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-2">Performance Analytics</h3>
-<p>📈 Improvement Rate: +15%</p>
-<p>🏆 Rank: Top 10%</p>
-<p>✅ Assignment Completion: 95%</p>
-</div>
-`;
-
-}
-
-</script>
-
+                container.innerHTML += `
+                    <div style="background: white; color: black; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h2 style="border-bottom: 2px solid black; padding-bottom: 10px;">HALL TICKET</h2>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                            <p><strong>Name:</strong> ${currentUser.name}</p>
+                            <p><strong>Roll No:</strong> ${currentUser.roll}</p>
+                            <p><strong>Course:</strong> ${c.name}</p>
+                            <p><strong>Attendance:</strong> ${pct.toFixed(1)}%</p>
+                            <p><strong>Status:</strong> ${eligible ? '<span style="color:green; font-weight:bold;">ELIGIBLE</span>' : '<span style="color:red; font-weight:bold;">DETAINED</span>'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    </script>
 </body>
 </html>
