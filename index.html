@@ -1,35 +1,188 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartEdu Cloud Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
-  }
+<meta charset="UTF-8">
+<title>SmartEdu Cloud - Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+font-family: 'Inter', sans-serif;
 }
-</script>
-<link rel="stylesheet" href="/index.css">
+</style>
 </head>
-<body>
-    <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+
+<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="bg-white p-8 rounded-xl shadow-xl w-[350px]">
+
+<h2 class="text-2xl font-bold text-center mb-6 text-blue-600">SmartEdu Cloud</h2>
+
+<input id="email" type="email" placeholder="Email"
+class="w-full border p-2 rounded mb-3">
+
+<input id="password" type="password" placeholder="Password"
+class="w-full border p-2 rounded mb-3">
+
+<button onclick="login()"
+class="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700">
+Login
+</button>
+
+<p id="loginError" class="text-red-500 text-sm mt-2 text-center"></p>
+
+<p class="text-center text-sm mt-4 text-gray-500">
+Demo Login:<br>
+student@smartedu.com | 123456
+</p>
+
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden w-full h-screen">
+
+<!-- NAVBAR -->
+<div class="bg-white shadow p-4 flex justify-between items-center">
+
+<h2 class="font-bold text-xl text-blue-600">SmartEdu Cloud Dashboard</h2>
+
+<button onclick="logout()"
+class="bg-red-500 text-white px-4 py-1 rounded">
+Logout
+</button>
+
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+<!-- PROFILE CARD -->
+<div class="bg-white p-4 rounded shadow">
+
+<h3 class="font-semibold mb-2">Student Profile</h3>
+
+<p><b>Name:</b> John Student</p>
+<p><b>Email:</b> student@smartedu.com</p>
+<p><b>Course:</b> Computer Science</p>
+
+</div>
+
+<!-- COURSES CARD -->
+<div class="bg-white p-4 rounded shadow">
+
+<h3 class="font-semibold mb-2">Enrolled Courses</h3>
+
+<ul class="list-disc ml-5">
+<li>Cloud Computing</li>
+<li>Android Development</li>
+<li>Data Structures</li>
+<li>AI Fundamentals</li>
+</ul>
+
+<button onclick="showCourses()"
+class="mt-3 bg-blue-600 text-white px-3 py-1 rounded">
+View Details
+</button>
+
+</div>
+
+<!-- PERFORMANCE CARD -->
+<div class="bg-white p-4 rounded shadow">
+
+<h3 class="font-semibold mb-2">Academic Performance</h3>
+
+<p>Attendance: 92%</p>
+<p>GPA: 8.6</p>
+
+<button onclick="showPerformance()"
+class="mt-3 bg-green-600 text-white px-3 py-1 rounded">
+Analyze
+</button>
+
+</div>
+
+</div>
+
+<!-- ACTION AREA -->
+<div id="actionBox" class="p-6"></div>
+
+</div>
+
+<script>
+
+// Sample Login Data
+const demoUser = {
+email: "student@smartedu.com",
+password: "123456"
+};
+
+// Login Function
+function login() {
+
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+if(email === demoUser.email && password === demoUser.password){
+
+document.getElementById("loginPage").style.display = "none";
+document.getElementById("dashboard").style.display = "block";
+
+} else {
+
+document.getElementById("loginError").innerText = "Invalid Login Credentials";
+
+}
+
+}
+
+// Logout Function
+function logout(){
+
+document.getElementById("dashboard").style.display = "none";
+document.getElementById("loginPage").style.display = "block";
+
+document.getElementById("email").value = "";
+document.getElementById("password").value = "";
+
+}
+
+// Courses Button
+function showCourses(){
+
+document.getElementById("actionBox").innerHTML = `
+<div class="bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-2">Course Details</h3>
+<p>✔ Cloud Computing - Progress: 80%</p>
+<p>✔ Android Development - Progress: 70%</p>
+<p>✔ Data Structures - Progress: 90%</p>
+<p>✔ AI Fundamentals - Progress: 60%</p>
+</div>
+`;
+
+}
+
+// Performance Button
+function showPerformance(){
+
+document.getElementById("actionBox").innerHTML = `
+<div class="bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-2">Performance Analytics</h3>
+<p>📈 Improvement Rate: +15%</p>
+<p>🏆 Rank: Top 10%</p>
+<p>✅ Assignment Completion: 95%</p>
+</div>
+`;
+
+}
+
+</script>
+
 </body>
 </html>
