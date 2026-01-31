@@ -1,0 +1,9 @@
+{
+  "name": "EduCloud Capstone",
+  "description": "Cloud-Based Big Data Analytics Platform for student performance, campus navigation, and adaptive learning.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
